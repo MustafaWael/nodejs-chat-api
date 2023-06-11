@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 
-console.log('Hello World');
-
 // Express App Instence
 const app = express();
 
