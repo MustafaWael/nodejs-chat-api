@@ -13,6 +13,7 @@ import {
 
 import { removeSensitiveData } from '../utils/user';
 import { UserErrror } from '../errors/UserError';
+import { send_email } from '../email/nodemailer';
 
 export const signupHandler = async (req: Request, res: Response) => {
   try {
@@ -100,7 +101,7 @@ export const forgotPasswordHandler = async (req: Request, res: Response) => {
   try {
     const email = req.body.email;
     const token = await forgotPassword(email);
-    console.log('token: ', token);
+    await send_email(email, token);
     res.send({ message: 'Password reset email sent' });
   } catch (error) {
     if (error instanceof UserErrror) {
