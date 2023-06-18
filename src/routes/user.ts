@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import {
   deleteUserHandler,
+  forgotPasswordHandler,
   getCurrentUserHandler,
   loginHandler,
   logoutAllSessionsHandler,
   logoutHandler,
+  resetPasswordHandler,
   signupHandler,
   updateUserHandler,
 } from '../handlers/user';
@@ -26,5 +28,9 @@ router.get('/users', auth, getCurrentUserHandler);
 router.patch('/users', auth, updateUserHandler);
 
 router.delete('/users', auth, deleteUserHandler);
+
+router.post('/users/forgot-password', forgotPasswordHandler);
+
+router.post('/users/reset-password', resetPasswordHandler);
 
 export default router;

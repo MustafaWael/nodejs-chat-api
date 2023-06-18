@@ -1,5 +1,7 @@
 import User, { IUser } from '../database/models/user';
 import jwt, { Secret } from 'jsonwebtoken';
+import { resetPasswordToken } from '../utils/jwtUtils';
+import { UserErrror } from '../errors/UserError';
 
 interface NewUser {
   name: string;
@@ -64,4 +66,44 @@ export const removeSpecificToken = async (
 ): Promise<void> => {
   user.tokens = user.tokens.filter((t) => t !== token);
   await user.save();
+};
+
+export const forgotPassword = async (email: string): Promise<string> => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new UserErrror('User not found');
+  }
+
+  const resetToken = resetPasswordToken(user._id);
+
+  // Store the reset token and expiration in the user document
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+
+  await user.save();
+
+  return resetToken;
+};
+
+export const resetPassword = async (
+  newPassword: string,
+  token: string,
+): Promise<IUser> => {
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: new Date() },
+  });
+
+  if (!user) {
+    throw new UserErrror('Invalid or expired token');
+  }
+
+  user.password = newPassword;
+  user.resetPasswordToken = null;
+  user.resetPasswordExpires = null;
+
+  const updated = await user.save();
+
+  return updated;
 };

@@ -10,6 +10,8 @@ export interface IUser extends Document {
   email: string;
   password: string;
   tokens: string[];
+  resetPasswordToken: string | null;
+  resetPasswordExpires: Date | null;
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -39,6 +41,8 @@ const schema = new Schema<IUser>({
     type: [String],
     required: true,
   },
+  resetPasswordToken: { type: String, default: null },
+  resetPasswordExpires: { type: Date, default: null },
 });
 
 // Hash the password before saving the user model

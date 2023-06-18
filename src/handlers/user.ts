@@ -7,9 +7,12 @@ import {
   generateToken,
   removeAllTokens,
   removeSpecificToken,
+  forgotPassword,
+  resetPassword,
 } from '../services/user';
 
 import { removeSensitiveData } from '../utils/user';
+import { UserErrror } from '../errors/UserError';
 
 export const signupHandler = async (req: Request, res: Response) => {
   try {
@@ -89,6 +92,34 @@ export const deleteUserHandler = async (req: Request, res: Response) => {
     const deletedUser = await removeUser(userId);
     res.json(removeSensitiveData(deletedUser));
   } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const forgotPasswordHandler = async (req: Request, res: Response) => {
+  try {
+    const email = req.body.email;
+    const token = await forgotPassword(email);
+    console.log('token: ', token);
+    res.send({ message: 'Password reset email sent' });
+  } catch (error) {
+    if (error instanceof UserErrror) {
+      return res.status(404).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const resetPasswordHandler = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    const user = await resetPassword(password, token);
+    console.log('user: ', user);
+    res.json({ message: 'Password reset successful' });
+  } catch (error) {
+    if (error instanceof UserErrror) {
+      return res.status(400).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 };
