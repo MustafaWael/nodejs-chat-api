@@ -6,12 +6,13 @@ import app from './app';
 const httpServer = createServer(app);
 
 // Initialize the io server
-const io = initIoServer(httpServer);
+initIoServer(httpServer);
 
-// Start the server
+// Start the HTTP server
 export const startServer = (port: string | number) => {
+  console.log('Starting server...');
+
   return httpServer.listen(port, () => {
-    console.log('Starting server...');
     console.log(`App listening on port ${port}`);
   });
 };
