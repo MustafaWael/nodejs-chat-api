@@ -3,6 +3,8 @@ import { IncomingMessage, Server, ServerResponse } from 'http';
 import { CLIENT_URL } from '../config';
 import { IUser } from '../database/models/user';
 import { authMiddleware } from './middleware/auth';
+import { messageHandler } from './handler/messageHandler';
+import { onlineStatusHandler } from './handler/onlineStatusHandler';
 
 type HttpServer = Server<typeof IncomingMessage, typeof ServerResponse>;
 
@@ -13,10 +15,12 @@ interface Message {
 
 export interface ServerToClientEvents {
   message(message: Message): void;
+  online(userId: string): void;
 }
 
 export interface ClientToServerEvents {
   message: (message: Message) => void;
+  online: (data: { isOnline: boolean }) => void;
 }
 
 export interface InterServerEvents {
@@ -53,6 +57,12 @@ export function initIoServer(httpServer: HttpServer) {
     connections.set(socket.data?.user?._id.toString(), socket);
     console.log('user', socket.data?.user);
     console.log('New client connected');
+
+    // handle the message event
+    messageHandler(socket);
+
+    // handle the online status event
+    onlineStatusHandler(socket);
 
     // handle the disconnect event
     socket.on('disconnect', () => {
