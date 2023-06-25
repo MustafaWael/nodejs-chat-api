@@ -1,5 +1,5 @@
 import { SocketType, connections } from '../index';
-import { Chat } from '../../database/models';
+import { Chat, Message } from '../../database/models';
 
 export const messageHandler = (socket: SocketType) => {
   // handle the message event
@@ -15,6 +15,14 @@ export const messageHandler = (socket: SocketType) => {
       if (!chat) {
         throw new Error('Chat not found');
       }
+
+      // save the message to the database
+      const newMessage = new Message({ message, chat: chatId });
+      await newMessage.save();
+
+      // add the message to the chat
+      chat.messages.push(newMessage._id);
+      await chat.save();
 
       // we want to send the message to the other participant in the chat.
       const otherParticipantId = chat.participants.find((participant) => {
