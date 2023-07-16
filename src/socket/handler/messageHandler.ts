@@ -32,20 +32,18 @@ export const messageHandler = (socket: SocketType) => {
       // get the socket of the other participant from the connections map
       const otherParticipantSocket = connections.get(otherParticipantIdString);
 
-      // if the other participant is not connected, throw an error
-      if (!otherParticipantSocket) {
-        throw new Error('Other participant not connected');
+      // if the other participant is connected, send the message to him
+      if (otherParticipantSocket) {
+        // send the message to the other participant
+        otherParticipantSocket.emit('message', {
+          message,
+          chatId,
+          sender: { _id: socket.data?.user?._id },
+          receiver: { _id: otherParticipantIdString },
+          status: 'pending',
+          timeStamp,
+        });
       }
-
-      // send the message to the other participant
-      otherParticipantSocket.emit('message', {
-        message,
-        chatId,
-        sender: { _id: socket.data?.user?._id },
-        receiver: { _id: otherParticipantIdString },
-        status: 'pending',
-        timeStamp,
-      });
 
       // save the message to the database
       const newMessage = new Message({
