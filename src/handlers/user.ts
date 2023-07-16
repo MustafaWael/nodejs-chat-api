@@ -22,7 +22,6 @@ export const signupHandler = async (req: Request, res: Response) => {
     const token = await generateToken(createdUser);
     res.status(201).json({ user: removeSensitiveData(createdUser), token });
   } catch (error) {
-    console.log('error: ', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -115,8 +114,7 @@ export const forgotPasswordHandler = async (req: Request, res: Response) => {
 export const resetPasswordHandler = async (req: Request, res: Response) => {
   try {
     const { token, password } = req.body;
-    const user = await resetPassword(password, token);
-    console.log('user: ', user);
+    await resetPassword(password, token);
     res.json({ message: 'Password reset successful' });
   } catch (error) {
     if (error instanceof UserErrror) {
