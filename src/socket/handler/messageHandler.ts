@@ -5,7 +5,7 @@ export const messageHandler = (socket: SocketType) => {
   // handle the message event
   socket.on('message', async (data) => {
     try {
-      const { message, chatId } = data;
+      const { message, chatId, timeStamp } = data;
 
       const chat = await Chat.findOne({
         _id: chatId,
@@ -15,14 +15,6 @@ export const messageHandler = (socket: SocketType) => {
       if (!chat) {
         throw new Error('Chat not found');
       }
-
-      // save the message to the database
-      const newMessage = new Message({ message, chat: chatId });
-      await newMessage.save();
-
-      // add the message to the chat
-      chat.messages.push(newMessage._id);
-      await chat.save();
 
       // we want to send the message to the other participant in the chat.
       const otherParticipantId = chat.participants.find((participant) => {
@@ -46,7 +38,30 @@ export const messageHandler = (socket: SocketType) => {
       }
 
       // send the message to the other participant
-      otherParticipantSocket.emit('message', { message, chatId });
+      otherParticipantSocket.emit('message', {
+        message,
+        chatId,
+        sender: { _id: socket.data?.user?._id },
+        receiver: { _id: otherParticipantIdString },
+        status: 'pending',
+        timeStamp,
+      });
+
+      // save the message to the database
+      const newMessage = new Message({
+        message,
+        chatId,
+        timeStamp,
+        sender: socket.data?.user?._id,
+        receiver: chat.participants.find((participant) => {
+          return participant.toString() !== socket.data?.user?._id.toString();
+        }),
+      });
+      await newMessage.save();
+
+      // add the message to the chat
+      chat.messages.push(newMessage._id);
+      await chat.save();
     } catch (err) {
       console.log(err);
     }
