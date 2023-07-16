@@ -3,6 +3,7 @@ import { Document, Schema, model, ObjectId } from 'mongoose';
 export interface IMessage extends Document {
   sender: ObjectId;
   receiver: ObjectId;
+  chatId: ObjectId;
   message: string;
   status: 'pending' | 'sent' | 'read';
   timeStamp: Date;
@@ -17,6 +18,7 @@ const messageSchema = new Schema<IMessage>({
     enum: ['pending', 'sent', 'read'],
     default: 'pending',
   },
+  chatId: { type: Schema.Types.ObjectId, ref: 'Chat', required: true },
   timeStamp: { type: Date, default: Date.now },
 });
 
