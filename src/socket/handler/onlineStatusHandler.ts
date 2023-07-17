@@ -5,6 +5,12 @@ export const onlineStatusHandler = (socket: SocketType) => {
 
   socket.broadcast.emit('online', { isOnline, userId: socket.data?.user?._id });
 
+  socket.on('online', ({ userId, isOnline }) => {
+    if (!isOnline) {
+      connections.delete(userId);
+    }
+  });
+
   socket.on('disconnect', () => {
     // send the id of the user that disconnected and check if he is online or not in the client side
     socket.broadcast.emit('online', {
