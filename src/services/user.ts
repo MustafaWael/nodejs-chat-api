@@ -10,6 +10,13 @@ interface NewUser {
 }
 
 export const createUser = async (newUser: NewUser): Promise<IUser> => {
+  // check if the email is already in use
+  const user = await User.findOne({ email: newUser.email });
+
+  if (user) {
+    throw new UserErrror('Email already exists');
+  }
+
   const createdUser = new User(newUser);
   await createdUser.save();
 

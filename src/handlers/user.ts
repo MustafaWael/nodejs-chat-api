@@ -22,6 +22,10 @@ export const signupHandler = async (req: Request, res: Response) => {
     const token = await generateToken(createdUser);
     res.status(201).json({ user: removeSensitiveData(createdUser), token });
   } catch (error) {
+    if (error instanceof UserErrror) {
+      return res.status(400).json({ error: error.message });
+    }
+
     res.status(500).json({ error: 'Internal server error' });
   }
 };
