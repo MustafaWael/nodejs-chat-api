@@ -1,17 +1,23 @@
-import { Chat } from '../database/models';
+import { Chat, User } from '../database/models';
 import { IChat } from '../database/models/chat';
+import { ChatError } from '../errors/ChatError';
 
 type Participants = IChat['participants'];
 
 export const createChat = async (participants: Participants) => {
-  try {
-    // Create a new chat with the specified participants
-    const chat = await Chat.create({ participants });
-    return chat;
-  } catch (error) {
-    console.error('Error creating chat', error);
-    throw new Error('Error creating chat');
+  // Check if the participants are a valid users
+  const userCount = await User.countDocuments({ _id: { $in: participants } });
+  if (userCount !== participants.length) {
+    throw new ChatError('Invalid User ID');
   }
+
+  // Create a new chat with the specified participants
+  const chat = await Chat.create({ participants });
+
+  if (!chat) {
+    throw new ChatError('No User Associated with this ID');
+  }
+  return chat;
 };
 
 export const getChats = async (userId: string) => {
